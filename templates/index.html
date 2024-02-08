@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>H[ai]nds</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <link rel="stylesheet" href="../static/css/main.css">
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+  <script>
+    const emojiThreshold = 1;
+    var counter = 0;
+    var currentEmoji = "";
+    var printedEmoji = "";
+
+    $(document).ready(function () {
+      setInterval(function () {
+        $.getJSON({
+          url: "/emoji_feed",
+          success: function (data) {
+            $("#emoji").html(data.emoji);
+
+            if (currentEmoji != "" && currentEmoji === data.emoji && counter == emojiThreshold && currentEmoji !== printedEmoji) {
+              var ul = document.getElementById("historyList");
+              var li = document.createElement("li");
+              var h4 = document.createElement("h4");
+              h4.appendChild(document.createTextNode(data.emoji));
+              h4.classList.add("smallEmoji");
+              li.appendChild(h4);
+              ul.prepend(li);
+              printedEmoji = currentEmoji;
+              if (ul.childNodes.length > 7) {
+                ul.removeChild(ul.lastElementChild);
+              }
+              counter = 0
+            } else if (currentEmoji === data.emoji && counter < emojiThreshold) {
+              counter++;
+              if (currentEmoji === "") {
+                printedEmoji = "";
+              }
+            } else {
+              counter = 0;
+            }
+            currentEmoji = data.emoji;
+          }
+        });
+      }, 500);
+    });
+
+
+
+    $(function () {
+      $('a#skinDetectionButton').on('click', function (e) {
+        e.preventDefault()
+        $.getJSON('/detect_skin_color',
+          function (data) {
+            //do nothing
+          });
+        return false;
+      });
+    });
+
+    $(function () {
+      $("#skinColorSelection").on("change", function (event) {
+        $.ajax({
+          data: {
+            skinColorSelection: $("#skinColorSelection").val()
+          },
+          type: "POST",
+          url: "/manual_color_selection"
+        })
+          .done(function (data) {
+            //do nothing
+          });
+      });
+    });
+  </script>
+
+</head>
+
+<body>
+  <div class="main">
+    <div class="stream">
+      <div id="imageContainer">
+        <img class="rounded" id="video" src="{{ url_for('video_feed') }}">
+        <div class="loader"></div>
+      </div>
+      <div id="buttonContainer">
+        <div id="buttonContainerCenter">
+          <a href=# id=skinDetectionButton class="buttonLink"><button class="customButton">Detect skin
+              color</button></a>
+          <label class="selectLabel">Or select skin color manually:</label>
+          <select id="skinColorSelection">
+            <option value="default">👍</option>
+            <option value="veryLight">👍🏻</option>
+            <option value="light">👍🏼</option>
+            <option value="medium">👍🏽</option>
+            <option value="dark">👍🏾</option>
+            <option value="veryDark">👍🏿</option>
+          </select>
+        </div>
+      </div>
+      <div id="availableEmojisContainerCenter">
+        <div>
+          <label>Available Emojis:</label>
+          <h4 id="emojiRow">👍 👎 ✌️ ✋ 👌 ✊ ☝️ 🤙 🤞 🤘 👋 🫶 🖖 🫰 🖕 👆 🤲 👐 🙌 👏 🤝 🙏 🫵</h4>
+        </div>
+      </div>
+    </div>
+    <div>
+      <h1 class="header">H[ai]nds</h1>
+      <div id="outputHistoryContainer">
+        <div class="output rounded">
+          <h1 id="emoji">{{ emoji }}</h1>
+        </div>
+        <div class="history rounded">
+          <div id="white-background"></div>
+          <ul id="historyList">
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+
+<footer>
+  <p class="text-footer">Mari Kruse, Manuele Schneckenburger, Niklas Esch und Ludwig Felder</p>
+</footer>
+
+</html>

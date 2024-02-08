@@ -1,0 +1,2 @@
+from model.handgesture_classifier.handgesture_classifier import HandGestureClassifier
+from model.point_history_classifier.point_history_classifier import PointHistoryClassifier
